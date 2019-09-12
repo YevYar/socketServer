@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font: 13px Helvetica, Arial;
+      }
+
+      div {
+        border-style: solid;
+        border-width: 3px;
+        border-color: red;
+        padding: 3px;
+        height: 400px;
+        width: 600px;
+        margin: 0 auto;
+      }
+
+      form input {
+        border-width: 3px;
+        border-color: black;
+        padding: 10px;
+        width: 90%;
+        margin-right: 0.5%;
+        height: 40px;
+      }
+
+      form button {
+        border-width: 3px;
+        border-color: black;
+        width: 9.5%;
+        background: rgb(130, 224, 255);
+        padding: 10px;
+        height: 40px;
+      }
+
+      #messages {
+        border-width: 3px;
+        border-color: green;
+        list-style-type: none;
+        margin: 0 0 5px 0;
+        padding: 0;
+        height: 343px;
+        overflow-y: scroll;
+      }
+
+      #messages li {
+        padding: 5px 10px;
+      }
+
+      .interlocutor {
+        background: #eee;
+      }
+      .you {
+        background: #fff;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <ul id="messages"></ul>
+      <form action="">
+        <input id="m" autocomplete="off" /><button>Send</button>
+      </form>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      $(() => {
+        let _id = -1;
+        let mesLastId = -1;
+        const socket = io();
+        $("form").submit(e => {
+          e.preventDefault(); // prevents page reloading
+          let mes = {
+            text: $("#m").val(),
+            user: { _id },
+            createdAt: new Date().toString(),
+            _id: Number(mesLastId--).toString()
+          };
+          socket.emit("message", mes);
+          $("#messages").append(
+            $("<li class='you'>").text(`${_id}: ${$("#m").val()}`)
+          );
+          $("#m").val("");
+          return false;
+        });
+        socket.on("id", function(id) {
+          _id = id;
+        });
+        socket.on("message", function(msg) {
+          $("#messages").append(
+            $("<li class='interlocutor'>").text(`${msg.user._id}: ${msg.text}`)
+          );
+        });
+      });
+    </script>
+  </body>
+</html>
